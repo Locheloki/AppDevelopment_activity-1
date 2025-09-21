@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'icon_label.dart';
 
@@ -23,46 +24,85 @@ class TaskCard extends StatelessWidget {
         ? Colors.redAccent
         : priority.toLowerCase() == 'medium'
             ? Colors.orangeAccent
-            : Colors.green;
+            : Colors.greenAccent;
 
-    return Card(
-      elevation: 2,
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(title,
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(20),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Theme.of(context).cardColor.withOpacity(0.8),
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: color.withOpacity(0.2),
+                blurRadius: 12,
+                offset: const Offset(0, 6),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  CircleAvatar(
+                    backgroundColor: color.withOpacity(0.15),
+                    foregroundColor: color,
+                    child: Text(
+                      _getInitials(assignee ?? "?"),
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      title,
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          )),
-                ),
-                IconLabel(icon: Icons.flag, label: priority, color: color),
-              ],
-            ),
-            const SizedBox(height: 6),
-            Text(description,
-                maxLines: 2, overflow: TextOverflow.ellipsis),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                IconLabel(
-                    icon: Icons.access_time,
-                    label: dueDate ?? "No date",
-                    color: color),
-                const SizedBox(width: 12),
-                IconLabel(
-                    icon: Icons.person,
-                    label: assignee ?? "Unassigned",
-                    color: color),
-              ],
-            ),
-          ],
+                            fontWeight: FontWeight.w600,
+                          ),
+                    ),
+                  ),
+                  Chip(
+                    label: Text(priority,
+                        style: const TextStyle(color: Colors.white)),
+                    backgroundColor: color,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Text(
+                description,
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  IconLabel(
+                      icon: Icons.access_time,
+                      label: dueDate ?? "No date",
+                      color: color),
+                  const SizedBox(width: 16),
+                  IconLabel(
+                      icon: Icons.person,
+                      label: assignee ?? "Unassigned",
+                      color: color),
+                ],
+              )
+            ],
+          ),
         ),
       ),
     );
+  }
+
+  String _getInitials(String name) {
+    final parts = name.split(" ");
+    if (parts.length == 1) return parts[0][0];
+    return (parts[0][0] + parts[1][0]).toUpperCase();
   }
 }
