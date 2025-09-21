@@ -22,19 +22,25 @@ class TaskListPage extends StatelessWidget {
 
   static final _demoTasks = [
     {
-      'title': 'Write unit tests',
-      'description': 'Cover TaskCard widget and interactive behavior.',
+      'title': 'Finish Flutter Assignment',
+      'description': 'Complete Week 2 widget fundamentals exercise.',
       'priority': 'High',
+      'dueDate': 'Today',
+      'assignee': 'Jimz Pogi',
     },
     {
-      'title': 'Refactor auth',
-      'description': 'Move logic into a reusable AuthService and clean up UI.',
+      'title': 'Update Portfolio',
+      'description': 'Add new PHP projects to personal website.',
       'priority': 'Medium',
+      'dueDate': 'Tomorrow',
+      'assignee': 'Reddrick Wow',
     },
     {
-      'title': 'Design review',
-      'description': 'Prepare slides for Friday review with product.',
+      'title': 'Read Research Paper',
+      'description': 'Review paper on UI/UX best practices.',
       'priority': 'Low',
+      'dueDate': 'Friday',
+      'assignee': 'Jasper Jelly Bean',
     },
   ];
 
@@ -52,6 +58,8 @@ class TaskListPage extends StatelessWidget {
             title: t['title']!,
             description: t['description']!,
             priority: t['priority']!,
+            dueDate: t['dueDate'],
+            assignee: t['assignee'],
           );
         },
       ),
@@ -127,4 +135,3 @@ class TaskListPage extends StatelessWidget {
     );
   }
 }
-
