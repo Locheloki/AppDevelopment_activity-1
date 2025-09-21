@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';import 'package:flutter/material.dart';
 import 'widgets/task_card.dart';
 import 'widgets/icon_label.dart';
 
@@ -12,47 +12,50 @@ class TaskApp extends StatefulWidget {
 }
 
 class _TaskAppState extends State<TaskApp> {
-  ThemeMode _themeMode = ThemeMode.light;
-
-  void _toggleTheme() {
-    setState(() {
-      _themeMode =
-          _themeMode == ThemeMode.light ? ThemeMode.dark : ThemeMode.light;
-    });
-  }
+  bool _darkMode = false;
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Modern Task Demo',
-      debugShowCheckedModeBanner: false,
-      themeMode: _themeMode,
+      title: 'Task Demo',
       theme: ThemeData(
         useMaterial3: true,
         brightness: Brightness.light,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.purpleAccent,
-          brightness: Brightness.light,
-        ),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
       ),
       darkTheme: ThemeData(
         useMaterial3: true,
         brightness: Brightness.dark,
         colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.deepPurple,
+          seedColor: Colors.teal,
           brightness: Brightness.dark,
         ),
       ),
-      home: TaskListPage(onToggleTheme: _toggleTheme),
+      themeMode: _darkMode ? ThemeMode.dark : ThemeMode.light,
+      home: TaskListPage(
+        darkMode: _darkMode,
+        toggleDarkMode: () => setState(() => _darkMode = !_darkMode),
+      ),
     );
   }
 }
 
-class TaskListPage extends StatelessWidget {
-  final VoidCallback onToggleTheme;
-  const TaskListPage({super.key, required this.onToggleTheme});
+class TaskListPage extends StatefulWidget {
+  final bool darkMode;
+  final VoidCallback toggleDarkMode;
 
-  static final _demoTasks = [
+  const TaskListPage({
+    super.key,
+    required this.darkMode,
+    required this.toggleDarkMode,
+  });
+
+  @override
+  State<TaskListPage> createState() => _TaskListPageState();
+}
+
+class _TaskListPageState extends State<TaskListPage> {
+  final List<Map<String, String>> _tasks = [
     {
       'title': 'Finish Flutter Assignment',
       'description': 'Complete Week 2 widget fundamentals exercise.',
@@ -78,140 +81,152 @@ class TaskListPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: const Text("📝 Modern Tasks"),
-        centerTitle: true,
+        title: const Text('Tasks'),
         actions: [
           IconButton(
-            icon: Icon(
-              theme.brightness == Brightness.light
-                  ? Icons.dark_mode_rounded
-                  : Icons.light_mode_rounded,
-            ),
-            onPressed: onToggleTheme,
+            onPressed: widget.toggleDarkMode,
+            icon: Icon(widget.darkMode ? Icons.dark_mode : Icons.light_mode),
           ),
         ],
       ),
-      body: ListView.separated(
-        padding: const EdgeInsets.all(16),
-        itemCount: _demoTasks.length,
-        separatorBuilder: (_, __) => const SizedBox(height: 16),
+      body: ReorderableListView.builder(
+        padding: const EdgeInsets.all(12),
+        itemCount: _tasks.length,
         itemBuilder: (context, i) {
-          final t = _demoTasks[i];
-          return TaskCard(
-            title: t['title']!,
-            description: t['description']!,
-            priority: t['priority']!,
-            dueDate: t['dueDate'],
-            assignee: t['assignee'],
+          final t = _tasks[i];
+          return Dismissible(
+            key: ValueKey(t['title']! + i.toString()),
+            direction: DismissDirection.endToStart,
+            background: Container(
+              decoration: BoxDecoration(
+                color: Colors.red.withOpacity(0.3),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              alignment: Alignment.centerRight,
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: const Icon(Icons.delete, color: Colors.white),
+            ),
+            onDismissed: (_) {
+              setState(() => _tasks.removeAt(i));
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text("Task removed")),
+              );
+            },
+            child: Container(
+              key: ValueKey("task_$i"),
+              margin: const EdgeInsets.symmetric(vertical: 6),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16),
+                gradient: LinearGradient(
+                  colors: [
+                    Theme.of(context).colorScheme.surface.withOpacity(0.7),
+                    Theme.of(context).colorScheme.surface.withOpacity(0.4),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 6,
+                    offset: const Offset(2, 4),
+                  ),
+                ],
+              ),
+              child: TaskCard(
+                title: t['title']!,
+                description: t['description']!,
+                priority: t['priority']!,
+                dueDate: t['dueDate'],
+                assignee: t['assignee'],
+              ),
+            ),
           );
         },
+        onReorder: (oldIndex, newIndex) {
+          setState(() {
+            if (newIndex > oldIndex) newIndex--;
+            final task = _tasks.removeAt(oldIndex);
+            _tasks.insert(newIndex, task);
+          });
+        },
       ),
-      floatingActionButton: Container(
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [Colors.pinkAccent, Colors.deepPurpleAccent],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.circular(30),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.pinkAccent.withOpacity(0.4),
-              blurRadius: 12,
-              offset: const Offset(0, 6),
-            ),
-          ],
-        ),
-        child: FloatingActionButton(
-          onPressed: () => _openAddModal(context),
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          child: const Icon(Icons.add, size: 28, color: Colors.white),
-        ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => _openAddModal(context),
+        child: const Icon(Icons.add),
       ),
     );
   }
 
   void _openAddModal(BuildContext context) {
-    String? selectedPriority = 'High';
+    String title = "";
+    String description = "";
+    String selectedPriority = "Medium";
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Theme.of(context).cardColor.withOpacity(0.3),
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
       builder: (_) {
         return StatefulBuilder(
           builder: (context, setState) {
             return Padding(
               padding: EdgeInsets.only(
                 bottom: MediaQuery.of(context).viewInsets.bottom,
-                top: 20,
-                left: 20,
-                right: 20,
+                top: 16,
+                left: 16,
+                right: 16,
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text("➕ Add Task",
+                  Text('Add Task',
                       style: Theme.of(context).textTheme.titleLarge),
-                  const SizedBox(height: 16),
-                  const TextField(
-                    decoration: InputDecoration(
-                      labelText: 'Title',
-                      hintText: 'Weekly sync notes',
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
                   const SizedBox(height: 12),
-                  const TextField(
+                  TextField(
+                    decoration: const InputDecoration(labelText: 'Title'),
+                    onChanged: (val) => title = val,
+                  ),
+                  const SizedBox(height: 8),
+                  TextField(
                     maxLines: 2,
-                    decoration: InputDecoration(
-                      labelText: 'Description',
-                      border: OutlineInputBorder(),
-                    ),
+                    decoration:
+                        const InputDecoration(labelText: 'Description'),
+                    onChanged: (val) => description = val,
                   ),
                   const SizedBox(height: 12),
-                  DropdownButtonFormField<String>(
+                  DropdownButton<String>(
                     value: selectedPriority,
-                    decoration: const InputDecoration(
-                      border: OutlineInputBorder(),
-                      labelText: "Priority",
-                    ),
                     items: ['High', 'Medium', 'Low']
-                        .map((p) => DropdownMenuItem(
-                              value: p,
-                              child: Text(p),
-                            ))
+                        .map((p) =>
+                            DropdownMenuItem(value: p, child: Text(p)))
                         .toList(),
-                    onChanged: (v) => setState(() => selectedPriority = v!),
+                    onChanged: (v) =>
+                        setState(() => selectedPriority = v!),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 12),
                   ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.deepPurpleAccent,
-                      minimumSize: const Size.fromHeight(50),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
                     onPressed: () {
-                      Navigator.pop(context);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('🎉 (UI-only) Task created!'),
-                          backgroundColor: Colors.pinkAccent,
-                        ),
-                      );
+                      if (title.isNotEmpty && description.isNotEmpty) {
+                        setState(() {
+                          _tasks.add({
+                            'title': title,
+                            'description': description,
+                            'priority': selectedPriority,
+                            'dueDate': 'Soon',
+                            'assignee': 'Me',
+                          });
+                        });
+                        Navigator.pop(context);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text("Task added")),
+                        );
+                      }
                     },
-                    child: const Text("Create",
-                        style: TextStyle(color: Colors.white)),
+                    child: const Text('Create'),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 12),
                 ],
               ),
             );
@@ -221,4 +236,5 @@ class TaskListPage extends StatelessWidget {
     );
   }
 }
+
 
