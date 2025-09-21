@@ -4,34 +4,53 @@ import 'widgets/icon_label.dart';
 
 void main() => runApp(const TaskApp());
 
-class TaskApp extends StatelessWidget {
+class TaskApp extends StatefulWidget {
   const TaskApp({super.key});
+
+  @override
+  State<TaskApp> createState() => _TaskAppState();
+}
+
+class _TaskAppState extends State<TaskApp> {
+  ThemeMode _themeMode = ThemeMode.light;
+
+  void _toggleTheme() {
+    setState(() {
+      _themeMode =
+          _themeMode == ThemeMode.light ? ThemeMode.dark : ThemeMode.light;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Poppy Task Demo',
+      title: 'Modern Task Demo',
       debugShowCheckedModeBanner: false,
+      themeMode: _themeMode,
       theme: ThemeData(
         useMaterial3: true,
+        brightness: Brightness.light,
         colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.purple,
+          seedColor: Colors.purpleAccent,
           brightness: Brightness.light,
         ),
-        textTheme: const TextTheme(
-          titleLarge: TextStyle(
-            fontWeight: FontWeight.bold,
-            color: Colors.black87,
-          ),
+      ),
+      darkTheme: ThemeData(
+        useMaterial3: true,
+        brightness: Brightness.dark,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.deepPurple,
+          brightness: Brightness.dark,
         ),
       ),
-      home: const TaskListPage(),
+      home: TaskListPage(onToggleTheme: _toggleTheme),
     );
   }
 }
 
 class TaskListPage extends StatelessWidget {
-  const TaskListPage({super.key});
+  final VoidCallback onToggleTheme;
+  const TaskListPage({super.key, required this.onToggleTheme});
 
   static final _demoTasks = [
     {
@@ -59,18 +78,26 @@ class TaskListPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: const Text("✨ Poppy Tasks ✨"),
+        title: const Text("📝 Modern Tasks"),
         centerTitle: true,
-        backgroundColor: Colors.purpleAccent,
-        foregroundColor: Colors.white,
-        elevation: 4,
+        actions: [
+          IconButton(
+            icon: Icon(
+              theme.brightness == Brightness.light
+                  ? Icons.dark_mode_rounded
+                  : Icons.light_mode_rounded,
+            ),
+            onPressed: onToggleTheme,
+          ),
+        ],
       ),
       body: ListView.separated(
         padding: const EdgeInsets.all(16),
         itemCount: _demoTasks.length,
-        separatorBuilder: (_, __) => const SizedBox(height: 12),
+        separatorBuilder: (_, __) => const SizedBox(height: 16),
         itemBuilder: (context, i) {
           final t = _demoTasks[i];
           return TaskCard(
@@ -82,11 +109,28 @@ class TaskListPage extends StatelessWidget {
           );
         },
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _openAddModal(context),
-        label: const Text("Add Task"),
-        icon: const Icon(Icons.add),
-        backgroundColor: Colors.pinkAccent,
+      floatingActionButton: Container(
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Colors.pinkAccent, Colors.deepPurpleAccent],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(30),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.pinkAccent.withOpacity(0.4),
+              blurRadius: 12,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: FloatingActionButton(
+          onPressed: () => _openAddModal(context),
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          child: const Icon(Icons.add, size: 28, color: Colors.white),
+        ),
       ),
     );
   }
@@ -96,9 +140,9 @@ class TaskListPage extends StatelessWidget {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).cardColor.withOpacity(0.95),
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (_) {
         return StatefulBuilder(
@@ -113,13 +157,13 @@ class TaskListPage extends StatelessWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text("🌈 Create a Poppy Task",
+                  Text("➕ Add Task",
                       style: Theme.of(context).textTheme.titleLarge),
                   const SizedBox(height: 16),
                   const TextField(
                     decoration: InputDecoration(
                       labelText: 'Title',
-                      hintText: 'e.g. Weekly sync notes',
+                      hintText: 'Weekly sync notes',
                       border: OutlineInputBorder(),
                     ),
                   ),
@@ -149,7 +193,7 @@ class TaskListPage extends StatelessWidget {
                   const SizedBox(height: 16),
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.purpleAccent,
+                      backgroundColor: Colors.deepPurpleAccent,
                       minimumSize: const Size.fromHeight(50),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -164,7 +208,7 @@ class TaskListPage extends StatelessWidget {
                         ),
                       );
                     },
-                    child: const Text("Add Task",
+                    child: const Text("Create",
                         style: TextStyle(color: Colors.white)),
                   ),
                   const SizedBox(height: 20),
