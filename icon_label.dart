@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';import 'package:flutter/material.dart';
 
 class IconLabel extends StatelessWidget {
   final IconData icon;
@@ -14,13 +14,19 @@ class IconLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final textStyle = Theme.of(context).textTheme.bodyMedium;
     return Row(
       children: [
-        Icon(icon, size: 16, color: color),
+        Icon(icon, size: 18, color: color),
         const SizedBox(width: 6),
-        Text(label, style: textStyle?.copyWith(color: color)),
+        Text(
+          label,
+          style: TextStyle(
+            color: color ?? Theme.of(context).colorScheme.onSurface,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
       ],
     );
   }
 }
+
