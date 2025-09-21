@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class IconLabel extends StatelessWidget {
   final IconData icon;
   final String label;
-  final Color? color; // NEW optional param
+  final Color? color;
 
   const IconLabel({
     super.key,
