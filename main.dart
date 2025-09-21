@@ -140,7 +140,7 @@ class TaskListPage extends StatelessWidget {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Theme.of(context).cardColor.withOpacity(0.95),
+      backgroundColor: Theme.of(context).cardColor.withOpacity(0.3),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -221,3 +221,4 @@ class TaskListPage extends StatelessWidget {
     );
   }
 }
+
